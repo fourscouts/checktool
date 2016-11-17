@@ -8,9 +8,11 @@ import (
 	"time"
 	"os"
 	"bufio"
+	"errors"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
+
 )
 
 // loadEtcdNode reads `r` containing JSON objects representing etcd nodes and
@@ -55,13 +57,43 @@ func loadEtcdNode(etcdClient *etcd.Client, r io.Reader) error {
 }
 
 
+func checkNodeState(key string, etcdClient *etcd.Client) (int, error) {
+	response, err := etcdClient.Get(key, false, false)
+	if err != nil {
+		return 0, err
+	}
+
+	childNodes := response.Node.Nodes
+	count := 0
+
+	// enumerate all the child nodes.
+	for range childNodes {
+		count += 1
+	}
+
+	return count, nil
+}
+
+
 func restoreBackup(etcdLocalURL string, backupPath string, backupFile string) error {
 
+
 	etcdClient := etcd.NewClient([]string{fmt.Sprintf("http://%s:2379", etcdLocalURL)})
+
+
+	var valueCount int
+	var err error
+
+	valueCount, err = checkNodeState("registry", etcdClient)
+
+	if valueCount > 0 {
+		return errors.New("etcd dir tree already populated")
+	}
+
 	file, err := os.Open(fmt.Sprintf("%s%s", backupPath, backupFile))
 
 	if err != nil {
-		return fmt.Errorf("Error opening file: %s", err)
+		return err
 	}
 
 	gzipReader, err := gzip.NewReader(bufio.NewReader(file))
@@ -73,8 +105,9 @@ func restoreBackup(etcdLocalURL string, backupPath string, backupFile string) er
 	if err := loadEtcdNode(etcdClient, gzipReader); err != nil {
 		return err
 	}
-	log.Printf("restore: complete")
 
+	log.Printf("restore: complete")
 	file.Close()
+
 	return nil
 }
