@@ -25,9 +25,17 @@ func main() {
 		"The name of the backup file. "+
 			"Environment variable: ETCD_BACKUP_KEY")
 
+	defaultBackupPath := "/tmp/"
+	if p := os.Getenv("ETCD_BACKUP_PATH"); p != "" {
+		defaultBackupPath = p
+	}
+	backupPath := flag.String("backup-path", defaultBackupPath,
+		"The path to the backup file. "+
+			"Environment variable: ETCD_BACKUP_PATH")
+
 	flag.Parse()
 
-	if err := restoreBackup(*EtcdLocalURL, *backupFile); err != nil {
+	if err := restoreBackup(*EtcdLocalURL, *backupPath, *backupFile); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 

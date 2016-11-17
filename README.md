@@ -10,6 +10,9 @@ Purpose is to create an Jenkins job which can check the etcd backup for validity
 ```
   -backup-file string
         The name of the backup file. Environment variable: ETCD_BACKUP_KEY (default "etcd-backup.gz")
+  -backup-path string
+        The path to the backup file. Environment variable: ETCD_BACKUP_PATH (default "/tmp/")
   -etcd-url string
         URL of the etcd node. Environment variable: ETCD_URL (default "127.0.0.1")
+
 ```

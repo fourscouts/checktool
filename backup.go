@@ -55,10 +55,10 @@ func loadEtcdNode(etcdClient *etcd.Client, r io.Reader) error {
 }
 
 
-func restoreBackup(etcdLocalURL string, backupFile string) error {
+func restoreBackup(etcdLocalURL string, backupPath string, backupFile string) error {
 
 	etcdClient := etcd.NewClient([]string{fmt.Sprintf("http://%s:2379", etcdLocalURL)})
-	file, err := os.Open(fmt.Sprintf("/tmp/%s", backupFile))
+	file, err := os.Open(fmt.Sprintf("%s%s", backupPath, backupFile))
 
 	if err != nil {
 		return fmt.Errorf("Error opening file: %s", err)
