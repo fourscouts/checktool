@@ -16,7 +16,7 @@ import (
 )
 
 // loadEtcdNode reads `r` containing JSON objects representing etcd nodes and
-// loads them into server.
+// loads them into etcd.
 func loadEtcdNode(etcdClient *etcd.Client, r io.Reader) error {
 	jsonReader := json.NewDecoder(r)
 	for {
@@ -57,7 +57,7 @@ func loadEtcdNode(etcdClient *etcd.Client, r io.Reader) error {
 }
 
 
-func checkNodeState(key string, etcdClient *etcd.Client) (int, error) {
+func getKeyCount(key string, etcdClient *etcd.Client) (int, error) {
 	response, err := etcdClient.Get(key, false, false)
 	if err != nil {
 		return 0, err
@@ -66,7 +66,7 @@ func checkNodeState(key string, etcdClient *etcd.Client) (int, error) {
 	childNodes := response.Node.Nodes
 	count := 0
 
-	// enumerate all the child nodes.
+	// count all the child nodes.
 	for range childNodes {
 		count += 1
 	}
@@ -80,13 +80,9 @@ func restoreBackup(etcdLocalURL string, backupPath string) error {
 
 	etcdClient := etcd.NewClient([]string{fmt.Sprintf("http://%s:2379", etcdLocalURL)})
 
+	keyCount, err := getKeyCount("registry", etcdClient)
 
-	var valueCount int
-	var err error
-
-	valueCount, err = checkNodeState("registry", etcdClient)
-
-	if valueCount > 0 {
+	if keyCount > 0 {
 		return errors.New("etcd dir tree already populated")
 	}
 
