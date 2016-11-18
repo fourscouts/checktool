@@ -75,7 +75,7 @@ func checkNodeState(key string, etcdClient *etcd.Client) (int, error) {
 }
 
 
-func restoreBackup(etcdLocalURL string, backupPath string, backupFile string) error {
+func restoreBackup(etcdLocalURL string, backupPath string) error {
 
 
 	etcdClient := etcd.NewClient([]string{fmt.Sprintf("http://%s:2379", etcdLocalURL)})
@@ -90,7 +90,7 @@ func restoreBackup(etcdLocalURL string, backupPath string, backupFile string) er
 		return errors.New("etcd dir tree already populated")
 	}
 
-	file, err := os.Open(fmt.Sprintf("%s%s", backupPath, backupFile))
+	file, err := os.Open(fmt.Sprintf("%s", backupPath))
 
 	if err != nil {
 		return err
