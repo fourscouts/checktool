@@ -10,16 +10,14 @@ var etcdLocalURL *string
 var backupPath *string
 
 func main() {
-
-	getParameters ()
-
+	
 	if err := restoreBackup(*etcdLocalURL, *backupPath); err != nil {
 		log.Fatalf("ERROR: %s", err)
 	}
 
 }
 
-func getParameters () {
+func init () {
 
 	var defaultEtcdLocalURL string = "127.0.0.1"
 	if u := os.Getenv("ETCD_URL"); u != "" {
